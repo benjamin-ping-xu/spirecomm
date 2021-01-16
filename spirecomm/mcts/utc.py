@@ -228,17 +228,23 @@ def UCTPlayGame(agent, coor, sd, char):
     agent.change_class(char)
     coor.game_setup(char, 20, sd)
 
-    while state.GetMoves() != []:
-        m = UCT(rootstate=state, itermax=100, verbose=False)
-        print("Best Move: " + str(m) + "\n")
-        state.DoMove(m)
-    if state.GetResult() == 1.0:
+    result = coor.game_loop()
+    if result:
         print("Victory!")
     else:
         print("Defeat :(")
+    #
+    # while state.GetMoves() != []:
+    #     m = UCT(rootstate=state, itermax=100, verbose=False)
+    #     print("Best Move: " + str(m) + "\n")
+    #     state.DoMove(m)
+    # if state.GetResult() == 1.0:
+    #     print("Victory!")
+    # else:
+    #     print("Defeat :(")
 
 
 if __name__ == "__main__":
-    """ Play a single game to the end using UCT for both players. 
+    """ Play a single game to the end using UCT. 
     """
     UCTPlayGame()
