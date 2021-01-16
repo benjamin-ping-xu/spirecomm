@@ -57,6 +57,53 @@ class GameState:
         pass
 
 
+class SpireState:
+    """
+    A state of the game Slay the Spire using the specified seed.
+    """
+
+    def __init__(self, sd, char):
+        self.seed = sd
+        self.character = char
+
+        self.hp = 0
+        self.gold = 0
+        self.relics = []
+        self.deck = []
+
+    def Clone(self):
+        """ Create a deep clone of this game state.
+        """
+        st = SpireState(self.seed, self.character)
+
+        st.hp = self.hp
+        st.gold = self.gold
+        st.relics = self.relics
+        st.deck = self.deck
+
+        return st
+
+    def DoMove(self, move):
+        """ Update a state by carrying out the given move.
+        """
+        # TODO: connect with SpireComm to implement game state change
+
+    def GetMoves(self):
+        """ Get all possible moves from this state.
+        """
+        # TODO: connect with SpireComm to get valid moves
+
+    def GetResult(self, playerjm):
+        """ Get the game result from the viewpoint of playerjm.
+        """
+        # TODO: connect with SpireComm to identify game win or loss
+
+    def __repr__(self):
+        """ Don't need this - but good style.
+        """
+        pass
+
+
 class NimState:
     """ A state of the game Nim. In Nim, players alternately take 1,2 or 3 chips with the
         winner being the player to take the last chip.
@@ -406,8 +453,3 @@ if __name__ == "__main__":
     """ Play a single game to the end using UCT for both players. 
     """
     UCTPlayGame()
-
-
-
-
-
