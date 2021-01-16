@@ -166,7 +166,8 @@ class Coordinator:
             if self.last_error is None:
                 self.in_game = communication_state.get("in_game")
                 if self.in_game:
-                    self.last_game_state = Game.from_json(communication_state.get("game_state"), communication_state.get("available_commands"))
+                    self.last_game_state = Game.from_json(communication_state.get("game_state"),
+                                                          communication_state.get("available_commands"))
             if perform_callbacks:
                 if self.last_error is not None:
                     self.action_queue.clear()
@@ -205,12 +206,33 @@ class Coordinator:
         :return: True if the game was a victory, else False
         :rtype: bool
         """
+        self.game_setup(player_class, ascension_level=ascension_level, seed=seed)
+        return self.game_loop()
+
+    def game_setup(self, player_class, ascension_level=0, seed=None):
+        """
+        Set up coordinator to play game
+        :param player_class: the class to play
+        :type player_class: PlayerClass
+        :param ascension_level: the ascension level to use
+        :type ascension_level: int
+        :param seed: the alphanumeric seed to use
+        :type seed: str
+        :return: True if the game was a victory, else False
+        :rtype: bool
+        """
         self.clear_actions()
         while not self.game_is_ready:
             self.receive_game_state_update(block=True, perform_callbacks=False)
         if not self.in_game:
             StartGameAction(player_class, ascension_level, seed).execute(self)
             self.receive_game_state_update(block=True)
+
+
+    def game_loop(self):
+        """
+        Loop actions according to ForgottenArbiter AI
+        """
         while self.in_game:
             self.execute_next_action_if_ready()
             self.receive_game_state_update()
@@ -218,4 +240,3 @@ class Coordinator:
             return self.last_game_state.screen.victory
         else:
             return False
-
