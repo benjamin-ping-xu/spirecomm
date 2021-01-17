@@ -20,7 +20,7 @@ import random
 
 from spirecomm.spire.character import PlayerClass
 from spirecomm.communication.coordinator import Coordinator
-from spirecomm.ai.agent import SimpleAgent
+from spirecomm.ai.agent import SimpleAgent, ScreenType
 
 
 class GameState:
@@ -63,30 +63,17 @@ class GameState:
 
 class SpireState:
     """
-    A state of the game Slay the Spire using the specified seed.
-    sd: seed to input when initializing run
-    char: PlayerClass(Enum)
+    A state of the game Slay the Spire
     """
 
-    def __init__(self, sd, char):
-        self.seed = sd
-        self.character = char
-
-        self.hp = 0
-        self.gold = 0
-        self.relics = []
-        self.deck = []
+    def __init__(self, game, coord):
+        self.game_state = game
+        self.coordinator = coord
 
     def Clone(self):
         """ Create a deep clone of this game state.
         """
-        st = SpireState(self.seed, self.character)
-
-        st.hp = self.hp
-        st.gold = self.gold
-        st.relics = self.relics
-        st.deck = self.deck
-
+        st = SpireState(self.game_state, self.coordinator)
         return st
 
     def DoMove(self, move):
@@ -100,9 +87,23 @@ class SpireState:
         # TODO: connect with SpireComm to get valid moves
 
     def GetResult(self):
-        """ Get the game result from the viewpoint of playerjm.
+        """ Get the game result.
         """
         # TODO: connect with SpireComm to identify game win or loss
+        if self.coordinator.last_game_state.screen_type == ScreenType.GAME_OVER:
+            if self.coordinator.last_game_state.screen.victory:
+                return 1.0
+            else:
+                return -1.0
+        else:
+            return 0.0
+        # if self.game_state.screen_type == ScreenType.GAME_OVER:
+        #     if self.game_state.screen.victory:
+        #         return 1.0
+        #     else:
+        #         return -1.0
+        # else:
+        #     return 0.0
 
     def __repr__(self):
         """ Don't need this - but good style.
@@ -194,6 +195,7 @@ def UCT(rootstate, itermax, verbose=False):
 
         # Rollout - this can often be made orders of magnitude quicker using a state.GetRandomMove() function
         while state.GetMoves() != []:  # while state is non-terminal
+            # TODO: change to use ForgottenArbiter AI for rollout
             state.DoMove(random.choice(state.GetMoves()))
 
         # Backpropagate
@@ -224,11 +226,14 @@ def UCTPlayGame(agent, coor, sd, char):
      :param char: character to use
      :type char: PlayerClass
     """
-    state = SpireState(sd, char)
+    state = SpireState(coor.last_game_state, coor)
     agent.change_class(char)
     coor.game_setup(char, 20, sd)
 
     result = coor.game_loop()
+    state = SpireState(coor.last_game_state, coor)
+
+    print("Game Result: " + str(state.GetResult()))
     if result:
         print("Victory!")
     else:
@@ -242,9 +247,3 @@ def UCTPlayGame(agent, coor, sd, char):
     #     print("Victory!")
     # else:
     #     print("Defeat :(")
-
-
-if __name__ == "__main__":
-    """ Play a single game to the end using UCT. 
-    """
-    UCTPlayGame()
